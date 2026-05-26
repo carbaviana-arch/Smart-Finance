@@ -1,35 +1,59 @@
 <!DOCTYPE html>
 <html lang="es">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Control de Presupuesto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finanzas Core</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Mi Presupuesto</h1>
-    </header>
-    <main>
-        <section id="resumen">
-            <h2>Resumen Mensual</h2>
-            <div id="resumen-container"></div>
+
+    <div id="notification-center" class="notification-center"></div>
+
+    <div class="container">
+        <header class="ios-header">
+            <span class="date-sub">Presupuesto Activo</span>
+            <h1>Mis Finanzas</h1>
+        </header>
+
+        <section class="widgets-grid">
+            <div class="card widget income">
+                <h3>Ingresos</h3>
+                <p id="total-income">2.800,00€</p>
+            </div>
+            <div class="card widget expenses">
+                <h3>Gastos</h3>
+                <p id="total-expenses">0,00€</p>
+            </div>
+            <div class="card widget balance">
+                <h3>Sobrante</h3>
+                <p id="total-balance">0,00€</p>
+            </div>
         </section>
-        <section id="lista-gastos">
-            <h2>Mis Gastos</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Descripción</th>
-                        <th>Categoría</th>
-                        <th>Cuenta</th>
-                        <th>Monto</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody id="gastos-tbody"></tbody>
-            </table>
+
+        <section class="main-content">
+            <div class="section-title">
+                <h2>Control de Pagos</h2>
+                <span id="pending-count" class="badge">0 pendientes</span>
+            </div>
+            
+            <div class="card list-container" id="payments-list">
+                </div>
         </section>
-    </main>
-    <script src="script.js"></script>
+    </div>
+
+    <nav class="tab-bar">
+        <button class="tab-item active">
+            <span class="icon">📊</span>
+            <span class="tab-label">Resumen</span>
+        </button>
+        <button class="tab-item" onclick="requestWebNotifications()">
+            <span class="icon">🔔</span>
+            <span class="tab-label">Alertas</span>
+        </button>
+    </nav>
+
+    <script src="app.js"></script>
 </body>
 </html>
