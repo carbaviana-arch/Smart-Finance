@@ -1,7 +1,7 @@
-// Base de datos de pagos (Extraídos de tus CSV de 2026)
-const ingresosTotales = 2800.00;
+// Cargar datos iniciales o recuperar del almacenamiento local del navegador
+let ingresosTotales = parseFloat(localStorage.getItem("ingresos_totales")) || 2800.00;
 
-const pagosData = [
+let pagosData = JSON.parse(localStorage.getItem("pagos_data")) || [
     { pago: "ALQUILER", prioridad: "Alta", monto: 852.00, propietario: "Casa", estado: "Por Pagar", fecha: "2026-06-05" },
     { pago: "Comedor Sebas", prioridad: "Media", monto: 93.00, propietario: "Sebas", estado: "Por Pagar", fecha: "2026-06-05" },
     { pago: "Ingles Sebas", prioridad: "Media", monto: 50.00, propietario: "Sebas", estado: "Por Pagar", fecha: "2026-06-01" },
@@ -17,35 +17,47 @@ const pagosData = [
     { pago: "Netflix", prioridad: "Media", monto: 13.90, propietario: "Casa", estado: "Pagado", fecha: "2026-06-01" }
 ];
 
-// Inicializar Aplicación
 document.addEventListener("DOMContentLoaded", () => {
     renderApp();
     checkProximosVencimientos();
 });
 
+// Guardar en LocalStorage
+function persistirDatos() {
+    localStorage.setItem("pagos_data", JSON.stringify(pagosData));
+    localStorage.setItem("ingresos_totales", ingresosTotales.toString());
+}
+
 function renderApp() {
     const listContainer = document.getElementById("payments-list");
-    let totalGastos = 0;
+    let totalPagado = 0;
+    let totalPendiente = 0;
     let pendientesCount = 0;
 
     listContainer.innerHTML = "";
 
     pagosData.forEach((item, index) => {
-        totalGastos += item.monto;
-        if (item.estado === "Por Pagar") pendientesCount++;
+        const monto = parseFloat(item.monto) || 0;
+        
+        // Sumatorios Generales de Estados
+        if (item.estado === "Pagado") {
+            totalPagado += monto;
+        } else {
+            totalPendiente += monto;
+            pendientesCount++;
+        }
 
-        // Formatear fecha para vista española
         const dateObj = new Date(item.fecha);
         const fechaFormateada = item.fecha ? `${dateObj.getDate()}/${dateObj.getMonth() + 1}` : '-';
 
         const itemHtml = `
-            <div class="list-item" onclick="cambiarEstado(${index})">
+            <div class="list-item" onclick="openModal(${index})">
                 <div class="item-left">
                     <h4>${item.pago}</h4>
-                    <p class="item-sub">${item.propietario} • Vence: ${fechaFormateada}</p>
+                    <p class="item-sub">${item.propietario} • Vence: ${fechaFormateada} • <span style="color:var(--ios-blue)" onclick="event.stopPropagation(); toggleEstadoRapido(${index});">🔄 Alternar</span></p>
                 </div>
                 <div class="item-right">
-                    <p class="item-amount">${item.monto.toFixed(2)}€</p>
+                    <p class="item-amount">${monto.toFixed(2)}€</p>
                     <p class="item-sub" style="color: ${item.estado === 'Pagado' ? 'var(--ios-green)' : 'var(--ios-red)'}">
                         ${item.estado}
                     </p>
@@ -55,29 +67,123 @@ function renderApp() {
         listContainer.insertAdjacentHTML("beforeend", itemHtml);
     });
 
-    // Actualizar Widgets
-    document.getElementById("total-expenses").innerText = `${totalGastos.toFixed(2)}€`;
-    document.getElementById("total-balance").innerText = `${(ingresosTotales - totalGastos).toFixed(2)}€`;
+    // Calcular montos globales
+    const totalGastosPresupuestados = totalPagado + totalPendiente;
+
+    // Inyectar en Interfaz (Widgets)
+    document.getElementById("total-income").innerHTML = `${ingresosTotales.toFixed(2)}€ <span style="font-size:10px;color:var(--ios-gray)">✏️</span>`;
+    document.getElementById("total-paid").innerText = `${totalPagado.toFixed(2)}€`;
+    document.getElementById("total-pending").innerText = `${totalPendiente.toFixed(2)}€`;
+    document.getElementById("total-balance").innerText = `${(ingresosTotales - totalGastosPresupuestados).toFixed(2)}€`;
     document.getElementById("pending-count").innerText = `${pendientesCount} pendientes`;
 }
 
-// Alternar estado de Pago
-function cambiarEstado(index) {
+// Cambiar estado rápido sin abrir modal desde el link azul
+function toggleEstadoRapido(index) {
     pagosData[index].estado = pagosData[index].estado === "Pagado" ? "Por Pagar" : "Pagado";
+    persistirDatos();
     renderApp();
 }
 
-// Alertas de Vencimiento Estilo Push de iOS
+// Editar Ingresos de forma directa
+function editIncome() {
+    const nuevoIngreso = prompt("Modificar monto de Ingresos Mensuales:", ingresosTotales);
+    if (nuevoIngreso !== null && !isNaN(nuevoIngreso)) {
+        ingresosTotales = parseFloat(nuevoIngreso);
+        persistirDatos();
+        renderApp();
+    }
+}
+
+// Lógica del Formulario Deslizante (Modal)
+function openModal(index = null) {
+    const modal = document.getElementById("ios-modal");
+    const form = document.getElementById("payment-form");
+    const deleteBtn = document.getElementById("btn-delete");
+    
+    form.reset();
+    
+    if (index !== null) {
+        // Modo Edición
+        document.getElementById("modal-title").innerText = "Editar Gasto";
+        document.getElementById("edit-index").value = index;
+        deleteBtn.style.display = "block";
+        
+        const item = pagosData[index];
+        document.getElementById("form-pago").value = item.pago;
+        document.getElementById("form-monto").value = item.monto;
+        document.getElementById("form-propietario").value = item.propietario;
+        document.getElementById("form-prioridad").value = item.prioridad;
+        document.getElementById("form-fecha").value = item.fecha;
+        document.getElementById("form-estado").value = item.estado;
+    } else {
+        // Modo Crear
+        document.getElementById("modal-title").innerText = "Nuevo Gasto";
+        document.getElementById("edit-index").value = "";
+        deleteBtn.style.display = "none";
+        document.getElementById("form-fecha").value = new Date().toISOString().split('T')[0];
+    }
+    
+    modal.classList.add("open");
+}
+
+function closeModal() {
+    document.getElementById("ios-modal").classList.remove("open");
+}
+
+function savePayment() {
+    const pagoInput = document.getElementById("form-pago").value.trim();
+    const montoInput = parseFloat(document.getElementById("form-monto").value);
+    const fechaInput = document.getElementById("form-fecha").value;
+
+    if (!pagoInput || isNaN(montoInput) || !fechaInput) {
+        alert("Por favor, rellena los campos obligatorios.");
+        return;
+    }
+
+    const nuevoGasto = {
+        pago: pagoInput,
+        prioridad: document.getElementById("form-prioridad").value,
+        monto: montoInput,
+        propietario: document.getElementById("form-propietario").value,
+        estado: document.getElementById("form-estado").value,
+        fecha: fechaInput
+    };
+
+    const editIndex = document.getElementById("edit-index").value;
+
+    if (editIndex !== "") {
+        // Actualizar existente
+        pagosData[editIndex] = nuevoGasto;
+    } else {
+        // Insertar nuevo
+        pagosData.push(nuevoGasto);
+    }
+
+    persistirDatos();
+    renderApp();
+    closeModal();
+}
+
+function deletePayment() {
+    const editIndex = document.getElementById("edit-index").value;
+    if (editIndex !== "" && confirm("¿Seguro que deseas eliminar este gasto?")) {
+        pagosData.splice(editIndex, 1);
+        persistirDatos();
+        renderApp();
+        closeModal();
+    }
+}
+
+// Alertas del centro de notificaciones
 function checkProximosVencimientos() {
     const hoy = new Date();
-    
     pagosData.forEach(item => {
         if (item.estado === "Por Pagar") {
             const fechaVencimiento = new Date(item.fecha);
             const diferenciaTiempo = fechaVencimiento - hoy;
             const diasRestantes = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));
 
-            // Si vence en los próximos 10 días o ya venció
             if (diasRestantes <= 10) {
                 let mensaje = `Vence en ${diasRestantes} días (${item.monto.toFixed(2)}€)`;
                 if (diasRestantes === 0) mensaje = `¡Vence HOY! (${item.monto.toFixed(2)}€)`;
@@ -94,25 +200,19 @@ function showIosNotification(title, message) {
     const notif = document.createElement("div");
     notif.className = "ios-notification";
     notif.innerHTML = `
-        <div class="notif-header">
-            <span>FINANZAS CORE</span>
-            <span>ahora</span>
-        </div>
+        <div class="notif-header"><span>FINANZAS CORE</span><span>ahora</span></div>
         <strong>${title}</strong>
         <p style="font-size: 13px; margin-top:2px; color: var(--ios-text-secondary);">${message}</p>
     `;
     container.appendChild(notif);
-
-    // Desaparece automáticamente a los 6 segundos
     setTimeout(() => { notif.remove(); }, 6000);
 }
 
-// Web Notification API Nativa (Opcional, para el botón Alertas)
 function requestWebNotifications() {
     if (!("Notification" in window)) return;
     Notification.requestPermission().then(permission => {
         if (permission === "granted") {
-            new Notification("Finanzas Core", { body: "¡Notificaciones nativas de iOS activadas correctamente!" });
+            new Notification("Finanzas Core", { body: "Centro de alertas activo" });
         }
     });
 }
