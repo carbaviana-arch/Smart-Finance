@@ -454,3 +454,199 @@ document.addEventListener("DOMContentLoaded", () => {
     renderApp();
     checkProximosVencimientos();
 });
+
+// ─── INFORMES ────────────────────────────────────────────────────────────
+let reporteActivo = "pendientes";
+
+function openReportsModal(el) {
+    switchTab("informes", el);
+    generarInforme(reporteActivo);
+    document.getElementById("reports-modal").classList.add("open");
+}
+
+function closeReportsModal() {
+    document.getElementById("reports-modal").classList.remove("open");
+}
+
+function handleReportsOverlayClick(e) {
+    if (e.target === document.getElementById("reports-modal")) closeReportsModal();
+}
+
+function selectReport(tipo, el) {
+    reporteActivo = tipo;
+    document.querySelectorAll(".report-tab").forEach(t => t.classList.remove("active"));
+    el.classList.add("active");
+    generarInforme(tipo);
+}
+
+function generarInforme(tipo) {
+    const container = document.getElementById("report-content");
+    const hoy = new Date();
+    const fechaStr = hoy.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+
+    if (tipo === "pendientes") {
+        const filas = pagosData
+            .filter(i => i.estado === "Por Pagar")
+            .sort((a, b) => diasHastaVencimiento(a.fecha) - diasHastaVencimiento(b.fecha));
+        const total = filas.reduce((s, i) => s + parseFloat(i.monto || 0), 0);
+        container.innerHTML = buildInformeHTML("Gastos Pendientes de Pago", fechaStr, filas, total, "pendientes");
+
+    } else if (tipo === "pagados") {
+        const filas = pagosData.filter(i => i.estado === "Pagado");
+        const total = filas.reduce((s, i) => s + parseFloat(i.monto || 0), 0);
+        container.innerHTML = buildInformeHTML("Gastos Pagados", fechaStr, filas, total, "pagados");
+
+    } else if (tipo === "propietario") {
+        container.innerHTML = buildInformeAgrupadoHTML("Gastos por Propietario", fechaStr, "propietario");
+
+    } else if (tipo === "cuenta") {
+        container.innerHTML = buildInformeAgrupadoHTML("Gastos por Cuenta", fechaStr, "cuenta");
+    }
+}
+
+function buildInformeHTML(titulo, fecha, filas, total, tipo) {
+    if (filas.length === 0) return `<p class="alerts-empty">Sin registros para este informe.</p>`;
+
+    const rows = filas.map(i => {
+        const dias = diasHastaVencimiento(i.fecha);
+        let etiqueta = "";
+        if (tipo === "pendientes") {
+            if (dias < 0)        etiqueta = `<span class="urgencia vencido">VENCIDO</span>`;
+            else if (dias === 0) etiqueta = `<span class="urgencia hoy">HOY</span>`;
+            else if (dias <= 3)  etiqueta = `<span class="urgencia urgente">${dias}d</span>`;
+            else if (dias <= 10) etiqueta = `<span class="urgencia proximo">${dias}d</span>`;
+        }
+        return `
+            <div class="report-row">
+                <div class="report-row-left">
+                    <span class="report-concept">${i.pago}</span>
+                    <span class="report-meta">${i.propietario} · ${i.cuenta || "—"} · ${formatearFecha(i.fecha)}</span>
+                </div>
+                <div class="report-row-right">
+                    ${etiqueta}
+                    <span class="report-amount">${parseFloat(i.monto).toFixed(2)}€</span>
+                </div>
+            </div>`;
+    }).join("");
+
+    return `
+        <div class="report-header-block">
+            <p class="report-date">${fecha}</p>
+            <h2 class="report-title">${titulo}</h2>
+            <p class="report-subtitle">${filas.length} concepto${filas.length !== 1 ? "s" : ""}</p>
+        </div>
+        <div class="report-list">${rows}</div>
+        <div class="report-total-row">
+            <span>Total</span>
+            <strong>${total.toFixed(2)}€</strong>
+        </div>`;
+}
+
+function buildInformeAgrupadoHTML(titulo, fecha, campo) {
+    const grupos = {};
+    pagosData.forEach(i => {
+        const clave = i[campo] || "Sin asignar";
+        if (!grupos[clave]) grupos[clave] = [];
+        grupos[clave].push(i);
+    });
+
+    if (Object.keys(grupos).length === 0) return `<p class="alerts-empty">Sin registros.</p>`;
+
+    let totalGeneral = 0;
+    const bloques = Object.entries(grupos).map(([grupo, items]) => {
+        const subtotal = items.reduce((s, i) => s + parseFloat(i.monto || 0), 0);
+        totalGeneral += subtotal;
+        const rows = items.map(i => `
+            <div class="report-row">
+                <div class="report-row-left">
+                    <span class="report-concept">${i.pago}</span>
+                    <span class="report-meta">${formatearFecha(i.fecha)} · <span style="color:${i.estado === 'Pagado' ? 'var(--ios-green)' : 'var(--ios-red)'};">${i.estado}</span></span>
+                </div>
+                <div class="report-row-right">
+                    <span class="report-amount">${parseFloat(i.monto).toFixed(2)}€</span>
+                </div>
+            </div>`).join("");
+        return `
+            <div class="report-group">
+                <div class="report-group-header">
+                    <span>${grupo}</span>
+                    <span>${subtotal.toFixed(2)}€</span>
+                </div>
+                ${rows}
+            </div>`;
+    }).join("");
+
+    return `
+        <div class="report-header-block">
+            <p class="report-date">${fecha}</p>
+            <h2 class="report-title">${titulo}</h2>
+        </div>
+        ${bloques}
+        <div class="report-total-row">
+            <span>Total general</span>
+            <strong>${totalGeneral.toFixed(2)}€</strong>
+        </div>`;
+}
+
+function generarTextoInforme() {
+    const hoy = new Date();
+    const fecha = hoy.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+    const tipo  = reporteActivo;
+    const titulos = {
+        pendientes:  "💳 Gastos Pendientes de Pago",
+        pagados:     "✅ Gastos Pagados",
+        propietario: "👤 Gastos por Propietario",
+        cuenta:      "🏦 Gastos por Cuenta"
+    };
+
+    let texto = `*FINANZAS CORE*\n${fecha}\n`;
+    texto += `─────────────────\n`;
+    texto += `*${titulos[tipo]}*\n\n`;
+
+    if (tipo === "pendientes" || tipo === "pagados") {
+        const filtro = tipo === "pendientes" ? "Por Pagar" : "Pagado";
+        const filas  = pagosData
+            .filter(i => i.estado === filtro)
+            .sort((a, b) => diasHastaVencimiento(a.fecha) - diasHastaVencimiento(b.fecha));
+        const total  = filas.reduce((s, i) => s + parseFloat(i.monto || 0), 0);
+        filas.forEach(i => {
+            texto += `• ${i.pago}\n`;
+            texto += `  ${i.propietario} · ${i.cuenta || "—"} · ${formatearFecha(i.fecha)} → *${parseFloat(i.monto).toFixed(2)}€*\n`;
+        });
+        texto += `─────────────────\n`;
+        texto += `*Total: ${total.toFixed(2)}€*`;
+
+    } else {
+        const campo = tipo === "propietario" ? "propietario" : "cuenta";
+        const grupos = {};
+        pagosData.forEach(i => {
+            const clave = i[campo] || "Sin asignar";
+            if (!grupos[clave]) grupos[clave] = [];
+            grupos[clave].push(i);
+        });
+        let totalGeneral = 0;
+        Object.entries(grupos).forEach(([grupo, items]) => {
+            const subtotal = items.reduce((s, i) => s + parseFloat(i.monto || 0), 0);
+            totalGeneral  += subtotal;
+            texto += `*${grupo}* (${subtotal.toFixed(2)}€)\n`;
+            items.forEach(i => {
+                const estado = i.estado === "Pagado" ? "✅" : "⏳";
+                texto += `  ${estado} ${i.pago} → *${parseFloat(i.monto).toFixed(2)}€*\n`;
+            });
+            texto += "\n";
+        });
+        texto += `─────────────────\n`;
+        texto += `*Total general: ${totalGeneral.toFixed(2)}€*`;
+    }
+
+    return texto;
+}
+
+function compartirInforme() {
+    const texto = generarTextoInforme();
+    if (navigator.share) {
+        navigator.share({ text: texto }).catch(() => {});
+    } else {
+        window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
+    }
+}
