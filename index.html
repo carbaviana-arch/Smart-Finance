@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f2f2f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Finanzas Core</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -12,17 +15,17 @@
 
     <div class="container">
         <header class="ios-header">
-            <span class="date-sub">Presupuesto Activo</span>
+            <span class="date-sub" id="header-date">Presupuesto Activo</span>
             <div class="header-main">
                 <h1>Mis Finanzas</h1>
-                <button class="btn-add" onclick="openModal()">＋</button>
+                <button class="btn-add" onclick="openModal()" aria-label="Añadir gasto">＋</button>
             </div>
         </header>
 
         <section class="widgets-grid">
             <div class="card widget income" onclick="editIncome()">
                 <h3>Ingresos <span>✏️</span></h3>
-                <p id="total-income">2.800,00€</p>
+                <p id="total-income">0,00€</p>
             </div>
             <div class="card widget paid">
                 <h3>Pagado</h3>
@@ -35,7 +38,7 @@
         </section>
 
         <div class="card balance-strip">
-            <span>Sobrante Total (Presupuestado):</span>
+            <span>Sobrante (presupuestado):</span>
             <strong id="total-balance">0,00€</strong>
         </div>
 
@@ -45,13 +48,14 @@
                 <span id="pending-count" class="badge">0 pendientes</span>
             </div>
             
-            <div class="card list-container" id="payments-list">
-                </div>
+            <div class="card list-container" id="payments-list"></div>
         </section>
     </div>
 
-    <div id="ios-modal" class="modal-overlay">
+    <!-- Modal Formulario -->
+    <div id="ios-modal" class="modal-overlay" onclick="handleOverlayClick(event)">
         <div class="modal-sheet">
+            <div class="modal-drag-handle"></div>
             <div class="modal-header">
                 <button class="btn-link" onclick="closeModal()">Cancelar</button>
                 <h3 id="modal-title">Nuevo Gasto</h3>
@@ -61,8 +65,8 @@
                 <input type="hidden" id="edit-index" value="">
                 
                 <div class="form-group card">
-                    <input type="text" id="form-pago" placeholder="Concepto (ej. Alquiler, Netflix)" required>
-                    <input type="number" id="form-monto" step="0.01" placeholder="Monto (€)" required>
+                    <input type="text" id="form-pago" placeholder="Concepto (ej. Alquiler, Netflix)" autocomplete="off">
+                    <input type="number" id="form-monto" step="0.01" min="0" placeholder="Monto (€)" inputmode="decimal">
                 </div>
 
                 <div class="form-group card">
@@ -85,7 +89,7 @@
                     </div>
                     <div class="select-row">
                         <label for="form-fecha">Fecha Vencimiento</label>
-                        <input type="date" id="form-fecha" required>
+                        <input type="date" id="form-fecha">
                     </div>
                     <div class="select-row">
                         <label for="form-estado">Estado</label>
@@ -103,14 +107,29 @@
         </div>
     </div>
 
+    <!-- Modal de Notificaciones -->
+    <div id="alerts-modal" class="modal-overlay" onclick="handleAlertsOverlayClick(event)">
+        <div class="modal-sheet">
+            <div class="modal-drag-handle"></div>
+            <div class="modal-header">
+                <button class="btn-link" onclick="closeAlertsModal()">Cerrar</button>
+                <h3>Alertas de Pagos</h3>
+                <button class="btn-link bold" onclick="requestWebNotifications()">Activar 🔔</button>
+            </div>
+            <div id="alerts-list" class="alerts-list"></div>
+            <p id="alerts-empty" class="alerts-empty" style="display:none;">✅ Sin pagos próximos a vencer</p>
+        </div>
+    </div>
+
     <nav class="tab-bar">
-        <button class="tab-item active">
+        <button class="tab-item active" onclick="switchTab('resumen', this)">
             <span class="icon">📊</span>
             <span class="tab-label">Resumen</span>
         </button>
-        <button class="tab-item" onclick="requestWebNotifications()">
+        <button class="tab-item" onclick="openAlertsModal(this)">
             <span class="icon">🔔</span>
             <span class="tab-label">Alertas</span>
+            <span id="alerts-badge" class="tab-badge" style="display:none;"></span>
         </button>
     </nav>
 
