@@ -129,6 +129,29 @@
         </div>
     </div>
 
+    <!-- Modal de Informes -->
+    <div id="reports-modal" class="modal-overlay" onclick="handleReportsOverlayClick(event)">
+        <div class="modal-sheet">
+            <div class="modal-drag-handle"></div>
+            <div class="modal-header">
+                <button class="btn-link" onclick="closeReportsModal()">Cerrar</button>
+                <h3>Informes</h3>
+                <button class="btn-link bold" id="btn-share-report" onclick="compartirInforme()">Compartir</button>
+            </div>
+
+            <!-- Selector de tipo de informe -->
+            <div class="report-selector">
+                <button class="report-tab active" onclick="selectReport('pendientes', this)">Pendientes</button>
+                <button class="report-tab" onclick="selectReport('propietario', this)">Propietario</button>
+                <button class="report-tab" onclick="selectReport('cuenta', this)">Cuenta</button>
+                <button class="report-tab" onclick="selectReport('pagados', this)">Pagados</button>
+            </div>
+
+            <!-- Contenido del informe -->
+            <div id="report-content" class="report-content"></div>
+        </div>
+    </div>
+
     <nav class="tab-bar">
         <button class="tab-item active" onclick="switchTab('resumen', this)">
             <span class="icon">📊</span>
@@ -138,6 +161,10 @@
             <span class="icon">🔔</span>
             <span class="tab-label">Alertas</span>
             <span id="alerts-badge" class="tab-badge" style="display:none;"></span>
+        </button>
+        <button class="tab-item" onclick="openReportsModal(this)">
+            <span class="icon">📋</span>
+            <span class="tab-label">Informes</span>
         </button>
     </nav>
 
