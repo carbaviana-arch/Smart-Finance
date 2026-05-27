@@ -453,3 +453,135 @@ body {
     from { transform: translateY(-16px); opacity: 0; }
     to   { transform: translateY(0);     opacity: 1; }
 }
+
+/* ─── Informes ───────────────────────────────────────────────────────────── */
+.report-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.report-selector::-webkit-scrollbar { display: none; }
+
+.report-tab {
+    flex-shrink: 0;
+    background: var(--ios-bg);
+    border: 1.5px solid var(--ios-separator);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ios-gray);
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+.report-tab.active {
+    background: var(--ios-blue);
+    border-color: var(--ios-blue);
+    color: white;
+    font-weight: 600;
+}
+
+.report-content { padding-bottom: 8px; }
+
+.report-header-block {
+    margin-bottom: 16px;
+}
+.report-date {
+    font-size: 12px;
+    color: var(--ios-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+.report-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 2px;
+}
+.report-subtitle {
+    font-size: 13px;
+    color: var(--ios-gray);
+}
+
+.report-list { margin-bottom: 4px; }
+
+.report-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 0.5px solid var(--ios-separator);
+    gap: 12px;
+}
+.report-row:last-child { border-bottom: none; }
+
+.report-row-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+.report-concept {
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.report-meta {
+    font-size: 12px;
+    color: var(--ios-gray);
+}
+.report-row-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.report-amount {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+}
+
+/* Grupos (propietario / cuenta) */
+.report-group { margin-bottom: 8px; }
+.report-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--ios-bg);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ios-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+}
+
+/* Total */
+.report-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0 4px;
+    border-top: 1px solid var(--ios-separator);
+    margin-top: 8px;
+    font-size: 15px;
+    color: var(--ios-text-secondary);
+}
+.report-total-row strong {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ios-text);
+    letter-spacing: -0.4px;
+}
