@@ -2,19 +2,19 @@
 let ingresosTotales = parseFloat(localStorage.getItem("ingresos_totales")) || 2800.00;
 
 let pagosData = JSON.parse(localStorage.getItem("pagos_data")) || [
-    { pago: "ALQUILER",             prioridad: "Alta",  monto: 852.00, propietario: "Casa",      estado: "Por Pagar", fecha: "2026-06-05" },
-    { pago: "Comedor Sebas",        prioridad: "Media", monto: 93.00,  propietario: "Sebas",     estado: "Por Pagar", fecha: "2026-06-05" },
-    { pago: "Ingles Sebas",         prioridad: "Media", monto: 50.00,  propietario: "Sebas",     estado: "Por Pagar", fecha: "2026-06-01" },
-    { pago: "Algoritmics / Torres", prioridad: "Media", monto: 69.70,  propietario: "Sebas",     estado: "Por Pagar", fecha: "2026-06-06" },
-    { pago: "Jazztel",              prioridad: "Alta",  monto: 134.00, propietario: "Casa",      estado: "Por Pagar", fecha: "2026-06-12" },
-    { pago: "Aerotermia",           prioridad: "Alta",  monto: 85.00,  propietario: "Casa",      estado: "Por Pagar", fecha: "2026-06-25" },
-    { pago: "Electricidad",         prioridad: "Alta",  monto: 60.00,  propietario: "Casa",      estado: "Por Pagar", fecha: "2026-06-01" },
-    { pago: "Ingles Daysol",        prioridad: "Media", monto: 0.00,   propietario: "Daysol",    estado: "Por Pagar", fecha: "2026-06-12" },
-    { pago: "Tarjeta Transporte",   prioridad: "Baja",  monto: 29.00,  propietario: "Daysol",    estado: "Por Pagar", fecha: "2026-06-01" },
-    { pago: "TDC Open",             prioridad: "Alta",  monto: 35.00,  propietario: "Francisco", estado: "Pagado",    fecha: "2026-05-31" },
-    { pago: "Visa Go (Ordenador)",  prioridad: "Alta",  monto: 50.00,  propietario: "Francisco", estado: "Pagado",    fecha: "2026-06-01" },
-    { pago: "Apartado Comida",      prioridad: "Alta",  monto: 350.00, propietario: "Casa",      estado: "Pagado",    fecha: "2026-06-01" },
-    { pago: "Netflix",              prioridad: "Media", monto: 13.90,  propietario: "Casa",      estado: "Pagado",    fecha: "2026-06-01" }
+    { pago: "ALQUILER",             prioridad: "Alta",  monto: 852.00, propietario: "Casa",      cuenta: "Conjunta", estado: "Por Pagar", fecha: "2026-06-05" },
+    { pago: "Comedor Sebas",        prioridad: "Media", monto: 93.00,  propietario: "Sebas",     cuenta: "Conjunta", estado: "Por Pagar", fecha: "2026-06-05" },
+    { pago: "Ingles Sebas",         prioridad: "Media", monto: 50.00,  propietario: "Sebas",     cuenta: "Conjunta", estado: "Por Pagar", fecha: "2026-06-01" },
+    { pago: "Algoritmics / Torres", prioridad: "Media", monto: 69.70,  propietario: "Sebas",     cuenta: "Conjunta", estado: "Por Pagar", fecha: "2026-06-06" },
+    { pago: "Jazztel",              prioridad: "Alta",  monto: 134.00, propietario: "Casa",      cuenta: "Conjunta", estado: "Por Pagar", fecha: "2026-06-12" },
+    { pago: "Aerotermia",           prioridad: "Alta",  monto: 85.00,  propietario: "Casa",      cuenta: "Conjunta", estado: "Por Pagar", fecha: "2026-06-25" },
+    { pago: "Electricidad",         prioridad: "Alta",  monto: 60.00,  propietario: "Casa",      cuenta: "Conjunta", estado: "Por Pagar", fecha: "2026-06-01" },
+    { pago: "Ingles Daysol",        prioridad: "Media", monto: 0.00,   propietario: "Daysol",    cuenta: "Day",      estado: "Por Pagar", fecha: "2026-06-12" },
+    { pago: "Tarjeta Transporte",   prioridad: "Baja",  monto: 29.00,  propietario: "Daysol",    cuenta: "Day",      estado: "Por Pagar", fecha: "2026-06-01" },
+    { pago: "TDC Open",             prioridad: "Alta",  monto: 35.00,  propietario: "Francisco", cuenta: "Fran",     estado: "Pagado",    fecha: "2026-05-31" },
+    { pago: "Visa Go (Ordenador)",  prioridad: "Alta",  monto: 50.00,  propietario: "Francisco", cuenta: "Fran",     estado: "Pagado",    fecha: "2026-06-01" },
+    { pago: "Apartado Comida",      prioridad: "Alta",  monto: 350.00, propietario: "Casa",      cuenta: "Conjunta", estado: "Pagado",    fecha: "2026-06-01" },
+    { pago: "Netflix",              prioridad: "Media", monto: 13.90,  propietario: "Casa",      cuenta: "Conjunta", estado: "Pagado",    fecha: "2026-06-01" }
 ];
 
 // ─── UTILIDADES DE FECHA ─────────────────────────────────────────────────
@@ -124,7 +124,7 @@ function renderApp() {
                         ${urgenciaBadge}
                     </div>
                     <p class="item-sub">
-                        ${item.propietario} • Vence: ${fechaStr}
+                        ${item.propietario} • ${item.cuenta || "—"} • Vence: ${fechaStr}
                         &nbsp;<span class="link-alternar" onclick="event.stopPropagation(); toggleEstadoRapido(${indexOriginal});">🔄</span>
                     </p>
                 </div>
@@ -195,6 +195,7 @@ function openModal(index = null) {
         document.getElementById("form-pago").value        = item.pago;
         document.getElementById("form-monto").value       = item.monto;
         document.getElementById("form-propietario").value = item.propietario;
+        document.getElementById("form-cuenta").value      = item.cuenta || "Conjunta";
         document.getElementById("form-prioridad").value   = item.prioridad;
         document.getElementById("form-fecha").value       = item.fecha;
         document.getElementById("form-estado").value      = item.estado;
@@ -232,6 +233,7 @@ function savePayment() {
         prioridad:   document.getElementById("form-prioridad").value,
         monto:       montoInput,
         propietario: document.getElementById("form-propietario").value,
+        cuenta:      document.getElementById("form-cuenta").value,
         estado:      document.getElementById("form-estado").value,
         fecha:       fechaInput
     };
