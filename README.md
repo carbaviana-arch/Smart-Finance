@@ -84,10 +84,28 @@ Elige el alcance en el selector del pie (**mes seleccionado** o **año completo*
   - Año: resumen de los 12 meses con ingresos y gastos desglosados, y balance.
 - **Informe PDF**: abre la ventana de impresión del navegador con una versión limpia del informe. Elige **Guardar como PDF** como destino. Incluye el cuadro resumen y las tablas con sus subtotales.
 
+## Instalar en el iPhone como una app
+
+Con la web publicada en GitHub Pages:
+
+1. Ábrela en **Safari**.
+2. Pulsa **Compartir** y elige **Añadir a pantalla de inicio**.
+3. Si aparece **Abrir como app web**, déjalo activado, y pulsa **Añadir**.
+
+Se abrirá a pantalla completa, con su icono y sin barras del navegador.
+
+Ten en cuenta:
+
+- La app instalada tiene su **propio almacenamiento**, separado del de Safari. Si ya tenías datos, haz antes una **Copia de seguridad** en Safari e impórtala con **Restaurar copia** dentro de la app instalada.
+- iOS no aplica a las apps de la pantalla de inicio el borrado automático de datos de Safari tras días sin uso.
+- En el móvil, **Copia de seguridad** y **Informe CSV** abren la hoja de compartir: elige **Guardar en Archivos**.
+- El **Informe PDF** usa la impresión del navegador, que puede no funcionar en la app instalada. Si falla, ábrelo desde Safari.
+
 ## Estructura del repositorio
 
 ```
-├── index.html   # toda la aplicación (HTML, CSS y JavaScript)
+├── index.html            # toda la aplicación (HTML, CSS y JavaScript)
+├── apple-touch-icon.png  # icono para la pantalla de inicio del iPhone
 └── README.md
 ```
 
