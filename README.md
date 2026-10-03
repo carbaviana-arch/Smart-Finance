@@ -2,7 +2,7 @@
 
 Dashboard interactivo para controlar tus finanzas personales. Es una web de **un solo archivo** (`index.html`), sin servidor, sin instalación y sin cuentas: abre el archivo o publícalo en GitHub Pages y funciona.
 
-Estética oscura en negro, gris y naranja, con paneles, rankings y gráficos de evolución anual.
+Estética oscura en negro, gris y naranja, con paneles, rankings y gráficos de evolución anual. En el móvil tiene aspecto de app de iOS: barra superior translúcida con el mes, títulos grandes y navegación inferior con tres pestañas (Resumen, Movimientos y Más).
 
 ## Qué puedes hacer
 
@@ -28,7 +28,7 @@ Estética oscura en negro, gris y naranja, con paneles, rankings y gráficos de 
 1. Descarga o clona el repositorio.
 2. Abre `index.html` en tu navegador.
 
-No necesita instalar nada. Solo la tipografía (Bricolage Grotesque) se carga desde Google Fonts; si no hay conexión, se usa una fuente del sistema.
+No necesita instalar nada ni usa recursos externos: la tipografía es la del sistema (San Francisco en iPhone).
 
 ## Despliegue en GitHub Pages
 
