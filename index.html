@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0e0e0e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Finanzas">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Mis finanzas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
@@ -256,6 +261,17 @@ const cel = v => { let t = String(v); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; r
 const orden = (a, b) => (a.tipo === b.tipo ? 0 : a.tipo === 'ingreso' ? -1 : 1) || (b.fijo - a.fijo) || (b.amount - a.amount);
 const mesesAnio = () => { const y = cur.slice(0, 4); return Array.from({length: 12}, (_, k) => y + '-' + String(k + 1).padStart(2, '0')); };
 
+// En móvil/tableta abre la hoja de compartir (Guardar en Archivos); en ordenador, descarga directa.
+function entregar(nombre, texto, tipo) {
+  const blob = new Blob([texto], {type: tipo});
+  const bajar = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre; a.click(); URL.revokeObjectURL(a.href); };
+  if (window.matchMedia('(pointer:coarse)').matches && navigator.canShare && navigator.share) {
+    const f = new File([blob], nombre, {type: tipo});
+    if (navigator.canShare({files: [f]})) { navigator.share({files: [f], title: nombre}).catch(e => { if (!e || e.name !== 'AbortError') bajar(); }); return; }
+  }
+  bajar();
+}
+
 function informeCSV() {
   let filas, nombre;
   if (rango() === 'mes') {
@@ -272,9 +288,7 @@ function informeCSV() {
       }));
     nombre = 'finanzas-informe-' + cur.slice(0, 4) + '.csv';
   }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF' + filas.join('\r\n')], {type: 'text/csv;charset=utf-8'}));
-  a.download = nombre; a.click(); URL.revokeObjectURL(a.href);
+  entregar(nombre, '\uFEFF' + filas.join('\r\n'), 'text/csv');
 }
 
 function informePDF() {
@@ -313,11 +327,7 @@ function informePDF() {
 document.getElementById('csv').onclick = informeCSV;
 document.getElementById('pdf').onclick = informePDF;
 
-document.getElementById('exp').onclick = () => {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(items, null, 2)], {type: 'application/json'}));
-  a.download = 'finanzas-' + cur + '.json'; a.click(); URL.revokeObjectURL(a.href);
-};
+document.getElementById('exp').onclick = () => entregar('finanzas-' + cur + '.json', JSON.stringify(items, null, 2), 'application/json');
 document.getElementById('imp').onclick = () => document.getElementById('file').click();
 document.getElementById('file').onchange = e => {
   const f = e.target.files[0]; if (!f) return;
