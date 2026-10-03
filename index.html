@@ -57,12 +57,29 @@ li button{background:none;color:var(--mut);padding:2px 8px;font-size:1.2rem}
 li button:hover{color:var(--or)}
 .empty{color:var(--mut);font-size:.9rem}
 form{display:flex;gap:6px;margin-top:6px}
-input{font:inherit;border:1px solid #3d3d3d;border-radius:10px;padding:8px 10px;min-width:0;background:var(--pn2);color:var(--tx)}
+input,select{font:inherit;border:1px solid #3d3d3d;border-radius:10px;padding:8px 10px;min-width:0;background:var(--pn2);color:var(--tx)}
 input[name=name]{flex:1}
 input[name=amount]{width:92px}
 .exp form button{background:var(--gr)}
 footer{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center;color:var(--mut);font-size:.85rem}
 @media(max-width:980px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.kpi.main{grid-column:1/-1}.mv{grid-template-columns:1fr}}
+#informe{display:none}
+@page{margin:16mm}
+@media print{body{background:#fff!important;color:#111}.wrap{display:none}
+#informe{display:block;font-size:12px;line-height:1.4}
+#informe h1{font-size:22px;margin:0;color:#111}
+#informe h1 small{color:#555;font-size:12px;margin-top:2px}
+#informe h2{color:#c24a00;font-size:14px;margin:18px 0 6px}
+#informe table{width:100%;border-collapse:collapse}
+#informe th,#informe td{padding:5px 6px;border-bottom:1px solid #ddd;text-align:left}
+#informe th{background:#f0f0f0}
+#informe .d{text-align:right;white-space:nowrap}
+#informe tfoot td{font-weight:700;border-top:2px solid #111}
+#informe .res{display:flex;gap:10px;margin:12px 0}
+#informe .res div{flex:1;border:1px solid #ccc;border-radius:8px;padding:8px}
+#informe .res small{color:#555}
+#informe .res b{display:block;font-size:16px}
+#informe tr{break-inside:avoid}}
 </style>
 </head>
 <body>
@@ -78,11 +95,15 @@ footer{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center;co
   <section class="mv" id="mv"></section>
   <footer>
     <span id="st"></span>
-    <button class="ghost" id="exp">Exportar copia</button>
-    <button class="ghost" id="imp">Importar copia</button>
+    <select id="alc" aria-label="Alcance del informe"><option value="mes">Informe: mes seleccionado</option><option value="anio">Informe: año completo</option></select>
+    <button class="ghost" id="pdf">Informe PDF</button>
+    <button class="ghost" id="csv">Informe CSV</button>
+    <button class="ghost" id="exp">Copia de seguridad</button>
+    <button class="ghost" id="imp">Restaurar copia</button>
     <input type="file" id="file" accept="application/json" hidden>
   </footer>
 </div>
+<div id="informe" aria-hidden="true"></div>
 
 <script>
 const KEY = 'finanzas-v1';
@@ -207,6 +228,72 @@ document.addEventListener('keydown', e => {
   const g = e.target.closest && e.target.closest('svg g[data-m]');
   if (g && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); cur = g.dataset.m; render(); }
 });
+// ---- Informes: CSV (Excel) y PDF (vía impresión del navegador) ----
+const rango = () => document.getElementById('alc').value;
+const nomMes = m => new Date(m.split('-')[0], m.split('-')[1] - 1, 1).toLocaleDateString('es-ES', {month:'long'});
+const nat = i => i.fijo ? 'Fijo' : (i.tipo === 'gasto' ? 'Extraordinario' : 'Eventual');
+const num = v => v.toFixed(2).replace('.', ',');
+const cel = v => { let t = String(v); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+const orden = (a, b) => (a.tipo === b.tipo ? 0 : a.tipo === 'ingreso' ? -1 : 1) || (b.fijo - a.fijo) || (b.amount - a.amount);
+const mesesAnio = () => { const y = cur.slice(0, 4); return Array.from({length: 12}, (_, k) => y + '-' + String(k + 1).padStart(2, '0')); };
+
+function informeCSV() {
+  let filas, nombre;
+  if (rango() === 'mes') {
+    const ing = total('ingreso', cur), gas = total('gasto', cur);
+    filas = [['Mes', 'Tipo', 'Naturaleza', 'Concepto', 'Importe (EUR)'].join(';')]
+      .concat(items.filter(i => activo(i, cur)).sort(orden).map(i => [cur, i.tipo === 'ingreso' ? 'Ingreso' : 'Gasto', nat(i), cel(i.name), num(i.amount)].join(';')))
+      .concat(['', ';;;Total ingresos;' + num(ing), ';;;Total gastos;' + num(gas), ';;;Balance;' + num(ing - gas)]);
+    nombre = 'finanzas-informe-' + cur + '.csv';
+  } else {
+    filas = [['Mes', 'Ingresos fijos', 'Ingresos eventuales', 'Gastos fijos', 'Gastos extraordinarios', 'Total ingresos', 'Total gastos', 'Balance'].join(';')]
+      .concat(mesesAnio().map(m => {
+        const a = total('ingreso', m, true), b = total('ingreso', m, false), c = total('gasto', m, true), d = total('gasto', m, false);
+        return [m, num(a), num(b), num(c), num(d), num(a + b), num(c + d), num(a + b - c - d)].join(';');
+      }));
+    nombre = 'finanzas-informe-' + cur.slice(0, 4) + '.csv';
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + filas.join('\r\n')], {type: 'text/csv;charset=utf-8'}));
+  a.download = nombre; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function informePDF() {
+  const hoy = new Date().toLocaleDateString('es-ES', {day: 'numeric', month: 'long', year: 'numeric'});
+  const caja = (t, v) => `<div><small>${t}</small><b>${v}</b></div>`;
+  const pct = (b, i) => (i > 0 ? Math.round(b / i * 100) : 0) + '%';
+  let h, tit, arch;
+  if (rango() === 'mes') {
+    const ing = total('ingreso', cur), gas = total('gasto', cur);
+    tit = 'Informe de ' + mes(cur); arch = cur;
+    h = `<div class="res">${caja('Ingresos', eur.format(ing))}${caja('Gastos', eur.format(gas))}${caja('Balance', eur.format(ing - gas))}${caja('Ahorro', pct(ing - gas, ing))}</div>` +
+      [0, 2, 1, 3].map(k => {
+        const [tipo, fijo, titulo] = PANELES[k];
+        const l = items.filter(i => i.tipo === tipo && i.fijo === fijo && activo(i, cur)).sort((a, b) => b.amount - a.amount);
+        const t = l.reduce((x, i) => x + i.amount, 0);
+        return `<h2>${titulo}</h2><table><thead><tr><th>Concepto</th><th>Detalle</th><th class="d">Importe</th></tr></thead><tbody>` +
+          (l.length ? l.map(i => `<tr><td>${esc(i.name)}</td><td>${fijo ? 'Desde ' + mes(i.month) : 'Este mes'}</td><td class="d">${eur.format(i.amount)}</td></tr>`).join('') : '<tr><td colspan="3">Sin movimientos</td></tr>') +
+          `</tbody><tfoot><tr><td colspan="2">Total</td><td class="d">${eur.format(t)}</td></tr></tfoot></table>`;
+      }).join('');
+  } else {
+    const ms = mesesAnio(), y = cur.slice(0, 4);
+    const I = ms.map(m => total('ingreso', m)), G = ms.map(m => total('gasto', m));
+    const ti = I.reduce((x, v) => x + v, 0), tg = G.reduce((x, v) => x + v, 0);
+    tit = 'Informe del año ' + y; arch = y;
+    h = `<div class="res">${caja('Ingresos', eur.format(ti))}${caja('Gastos', eur.format(tg))}${caja('Balance', eur.format(ti - tg))}${caja('Ahorro', pct(ti - tg, ti))}</div>
+      <h2>Resumen por meses</h2><table><thead><tr><th>Mes</th><th class="d">Ingresos</th><th class="d">Gastos</th><th class="d">Balance</th></tr></thead><tbody>` +
+      ms.map((m, k) => `<tr><td style="text-transform:capitalize">${nomMes(m)}</td><td class="d">${eur.format(I[k])}</td><td class="d">${eur.format(G[k])}</td><td class="d">${eur.format(I[k] - G[k])}</td></tr>`).join('') +
+      `</tbody><tfoot><tr><td>Total</td><td class="d">${eur.format(ti)}</td><td class="d">${eur.format(tg)}</td><td class="d">${eur.format(ti - tg)}</td></tr></tfoot></table>
+      <p style="color:#555;margin-top:10px">Los ingresos y gastos fijos se proyectan a los meses posteriores a su alta.</p>`;
+  }
+  document.getElementById('informe').innerHTML = `<h1>${tit}<small>Generado el ${hoy}</small></h1>` + h;
+  const t0 = document.title; document.title = 'finanzas-informe-' + arch;
+  window.addEventListener('afterprint', () => { document.title = t0; }, {once: true});
+  setTimeout(() => window.print(), 50);
+}
+document.getElementById('csv').onclick = informeCSV;
+document.getElementById('pdf').onclick = informePDF;
+
 document.getElementById('exp').onclick = () => {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(items, null, 2)], {type: 'application/json'}));
