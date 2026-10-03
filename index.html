@@ -77,7 +77,7 @@ footer{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center;co
   <section class="grid" id="grid"></section>
   <section class="mv" id="mv"></section>
   <footer>
-    <span>Los datos se guardan en este navegador.</span>
+    <span id="st"></span>
     <button class="ghost" id="exp">Exportar copia</button>
     <button class="ghost" id="imp">Importar copia</button>
     <input type="file" id="file" accept="application/json" hidden>
@@ -93,9 +93,21 @@ const shift = (m, d) => { const [y, n] = m.split('-').map(Number); const t = new
 const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const INI = 'EFMAMJJASOND';
 
-let items = [];
-try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) {}
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) {} };
+// Almacenamiento local: todo se guarda en este dispositivo (localStorage)
+let okStore = true;
+try { localStorage.setItem('__t', '1'); localStorage.removeItem('__t'); } catch (e) { okStore = false; }
+const valido = i => i && typeof i.name === 'string' && typeof i.amount === 'number' && /^\d{4}-\d{2}$/.test(i.month);
+const leer = () => { try { const d = JSON.parse(localStorage.getItem(KEY)); return Array.isArray(d) ? d.filter(valido) : []; } catch (e) { return []; } };
+let items = leer();
+const estado = () => {
+  const el = document.getElementById('st');
+  el.textContent = okStore ? 'Guardado en este dispositivo · ' + items.length + ' movimientos' : '⚠ Este navegador no permite guardar (¿modo privado?). Exporta una copia para no perder datos.';
+  el.style.color = okStore ? '' : 'var(--or)';
+};
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); okStore = true; } catch (e) { okStore = false; } estado(); };
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+// Si abres la app en otra pestaña, se sincroniza sola
+window.addEventListener('storage', e => { if (e.key === KEY) { items = leer(); render(); estado(); } });
 const now = new Date();
 let cur = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
@@ -207,13 +219,14 @@ document.getElementById('file').onchange = e => {
   r.onload = () => {
     try {
       const d = JSON.parse(r.result);
-      if (!Array.isArray(d) || !d.every(i => i && typeof i.name === 'string' && typeof i.amount === 'number' && /^\d{4}-\d{2}$/.test(i.month))) throw 0;
+      if (!Array.isArray(d) || !d.every(valido)) throw 0;
       if (confirm('Esto reemplazará los datos actuales. ¿Continuar?')) { items = d; save(); render(); }
     } catch (x) { alert('El archivo no es una copia válida.'); }
   };
   r.readAsText(f); e.target.value = '';
 };
 render();
+estado();
 </script>
 </body>
 </html>
