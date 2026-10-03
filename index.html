@@ -1,173 +1,219 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#f2f2f7">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>Finanzas Core</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mis finanzas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0e0e;--pn:#1c1c1c;--pn2:#262626;--line:#333;--tx:#f2f2f2;--mut:#9a9a9a;--or:#ff7a1a;--orl:#ffc499;--gr:#cfcfcf;--gr2:#6e6e6e;--r:18px}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#2a2a2a,var(--bg) 60%) fixed;color:var(--tx);font:400 16px/1.45 "Bricolage Grotesque",system-ui,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:22px 16px 48px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+h1{margin:0;font-size:clamp(2rem,5vw,3.2rem);line-height:1;font-weight:800;letter-spacing:-.02em}
+h1 small{display:block;font-size:1.1rem;font-weight:400;color:var(--mut);letter-spacing:0;margin-top:4px}
+.month{display:flex;align-items:center;gap:6px;background:var(--pn);border-radius:99px;padding:4px}
+.month b{min-width:140px;text-align:center;text-transform:capitalize;font-weight:600}
+button{font:inherit;cursor:pointer;border:0;border-radius:99px;background:var(--or);color:#161616;padding:8px 16px;font-weight:600}
+button.ghost{background:transparent;color:var(--tx);border:1px solid var(--line);font-weight:400}
+.month button{width:36px;height:36px;padding:0;background:var(--pn2);color:var(--tx)}
+:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+.card{background:var(--pn);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.kpis{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.kpi small{color:var(--mut);display:block}
+.kpi strong{font-size:1.7rem;font-weight:600;display:block}
+.kpi.main strong{font-size:2.8rem;font-weight:800;letter-spacing:-.02em}
+.kpi em{font-style:normal;font-size:.85rem;color:var(--mut)}
+.or{color:var(--or)}.gr{color:var(--gr)}
+.grid{display:grid;grid-template-columns:1fr 1.7fr 1fr;gap:12px;margin-bottom:12px}
+.col{display:grid;gap:12px;align-content:start}
+h2{font-size:1.15rem;margin:0;font-weight:800;color:var(--or)}
+h2 span{font-weight:400;color:var(--mut);font-size:.82rem;margin-left:6px}
+.sub{color:var(--mut);font-size:.85rem;margin:2px 0 10px}
+.tag{text-align:right;font-weight:800;color:var(--or);font-size:.85rem;margin-top:6px}
+.r{display:flex;align-items:center;gap:8px;font-size:.85rem;padding:3px 0}
+.r .l{flex:0 0 36%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;color:var(--gr)}
+.r .t{flex:1;height:14px;background:var(--pn2);border-radius:4px}
+.r .t i{display:block;height:100%;border-radius:4px}
+.r b{flex:0 0 66px;font-weight:600}
+.none{color:var(--mut);font-size:.9rem;padding:6px 0}
+svg{width:100%;height:auto;display:block}
+svg g[data-m]{cursor:pointer}
+svg text{font:11px "Bricolage Grotesque",sans-serif;fill:var(--mut)}
+.donut{display:flex;align-items:center;gap:12px}
+.donut svg{width:46%;flex:none}
+.donut .lg{font-size:.85rem;display:grid;gap:6px}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.mv{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mv .col{gap:12px}
+ul{list-style:none;margin:6px 0;padding:0}
+li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+li:last-child{border:0}
+li .n{flex:1;min-width:0;overflow-wrap:anywhere}
+li small{display:block;color:var(--mut);font-size:.78rem}
+li button{background:none;color:var(--mut);padding:2px 8px;font-size:1.2rem}
+li button:hover{color:var(--or)}
+.empty{color:var(--mut);font-size:.9rem}
+form{display:flex;gap:6px;margin-top:6px}
+input{font:inherit;border:1px solid #3d3d3d;border-radius:10px;padding:8px 10px;min-width:0;background:var(--pn2);color:var(--tx)}
+input[name=name]{flex:1}
+input[name=amount]{width:92px}
+.exp form button{background:var(--gr)}
+footer{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center;color:var(--mut);font-size:.85rem}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.kpi.main{grid-column:1/-1}.mv{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-
-    <div id="notification-center" class="notification-center"></div>
-
-    <div class="container">
-        <header class="ios-header">
-            <span class="date-sub" id="header-date">Presupuesto Activo</span>
-            <div class="header-main">
-                <h1>Mis Finanzas</h1>
-                <button class="btn-add" onclick="openModal()" aria-label="Añadir gasto">＋</button>
-            </div>
-        </header>
-
-        <section class="widgets-grid">
-            <div class="card widget income" onclick="editIncome()">
-                <h3>Ingresos <span>✏️</span></h3>
-                <p id="total-income">0,00€</p>
-            </div>
-            <div class="card widget paid">
-                <h3>Pagado</h3>
-                <p id="total-paid">0,00€</p>
-            </div>
-            <div class="card widget pending">
-                <h3>Pendiente</h3>
-                <p id="total-pending">0,00€</p>
-            </div>
-        </section>
-
-        <div class="card balance-strip">
-            <span>Sobrante (presupuestado):</span>
-            <strong id="total-balance">0,00€</strong>
-        </div>
-
-        <section class="main-content">
-            <div class="section-title">
-                <h2>Control de Pagos</h2>
-                <span id="pending-count" class="badge">0 pendientes</span>
-            </div>
-            
-            <div class="card list-container" id="payments-list"></div>
-        </section>
+<div class="wrap">
+  <header>
+    <h1>Dashboard<small>finanzas personales</small></h1>
+    <div class="month" role="group" aria-label="Mes">
+      <button id="prev" aria-label="Mes anterior">‹</button><b id="mlabel"></b><button id="next" aria-label="Mes siguiente">›</button>
     </div>
+  </header>
+  <section class="kpis" id="kpis" aria-live="polite"></section>
+  <section class="grid" id="grid"></section>
+  <section class="mv" id="mv"></section>
+  <footer>
+    <span>Los datos se guardan en este navegador.</span>
+    <button class="ghost" id="exp">Exportar copia</button>
+    <button class="ghost" id="imp">Importar copia</button>
+    <input type="file" id="file" accept="application/json" hidden>
+  </footer>
+</div>
 
-    <!-- Modal Formulario -->
-    <div id="ios-modal" class="modal-overlay" onclick="handleOverlayClick(event)">
-        <div class="modal-sheet">
-            <div class="modal-drag-handle"></div>
-            <div class="modal-header">
-                <button class="btn-link" onclick="closeModal()">Cancelar</button>
-                <h3 id="modal-title">Nuevo Gasto</h3>
-                <button class="btn-link bold" onclick="savePayment()">Guardar</button>
-            </div>
-            <form id="payment-form" onsubmit="event.preventDefault();">
-                <input type="hidden" id="edit-index" value="">
-                
-                <div class="form-group card">
-                    <input type="text" id="form-pago" placeholder="Concepto (ej. Alquiler, Netflix)" autocomplete="off">
-                    <input type="number" id="form-monto" step="0.01" min="0" placeholder="Monto (€)" inputmode="decimal">
-                </div>
+<script>
+const KEY = 'finanzas-v1';
+const eur = new Intl.NumberFormat('es-ES', {style:'currency', currency:'EUR'});
+const eur0 = new Intl.NumberFormat('es-ES', {style:'currency', currency:'EUR', maximumFractionDigits:0});
+const mes = m => { const [y, n] = m.split('-'); return new Date(y, n - 1, 1).toLocaleDateString('es-ES', {month:'long', year:'numeric'}); };
+const shift = (m, d) => { const [y, n] = m.split('-').map(Number); const t = new Date(y, n - 1 + d, 1); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0'); };
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const INI = 'EFMAMJJASOND';
 
-                <div class="form-group card">
-                    <div class="select-row">
-                        <label for="form-propietario">Propietario</label>
-                        <select id="form-propietario">
-                            <option value="Casa">Casa</option>
-                            <option value="Sebas">Sebas</option>
-                            <option value="Francisco">Francisco</option>
-                            <option value="Daysol">Daysol</option>
-                        </select>
-                    </div>
-                    <div class="select-row">
-                        <label for="form-cuenta">Cuenta</label>
-                        <select id="form-cuenta">
-                            <option value="Conjunta">Conjunta</option>
-                            <option value="Fran">Fran</option>
-                            <option value="Day">Day</option>
-                        </select>
-                    </div>
-                    <div class="select-row">
-                        <label for="form-prioridad">Prioridad</label>
-                        <select id="form-prioridad">
-                            <option value="Alta">Alta</option>
-                            <option value="Media">Media</option>
-                            <option value="Baja">Baja</option>
-                        </select>
-                    </div>
-                    <div class="select-row">
-                        <label for="form-fecha">Fecha Vencimiento</label>
-                        <input type="date" id="form-fecha">
-                    </div>
-                    <div class="select-row">
-                        <label for="form-estado">Estado</label>
-                        <select id="form-estado">
-                            <option value="Por Pagar">Por Pagar</option>
-                            <option value="Pagado">Pagado</option>
-                        </select>
-                    </div>
-                </div>
+let items = [];
+try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) {} };
+const now = new Date();
+let cur = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
-                <button type="button" id="btn-delete" class="btn-danger card" onclick="deletePayment()" style="display: none;">
-                    Eliminar Gasto
-                </button>
-            </form>
-        </div>
-    </div>
+// Los fijos se repiten cada mes desde su alta (también se proyectan a meses futuros); los eventuales solo cuentan en su mes.
+const activo = (it, m) => it.fijo ? it.month <= m : it.month === m;
+const total = (tipo, m, fijo) => items.filter(i => i.tipo === tipo && activo(i, m) && (fijo === undefined || i.fijo === fijo)).reduce((s, i) => s + i.amount, 0);
 
-    <!-- Modal de Notificaciones -->
-    <div id="alerts-modal" class="modal-overlay" onclick="handleAlertsOverlayClick(event)">
-        <div class="modal-sheet">
-            <div class="modal-drag-handle"></div>
-            <div class="modal-header">
-                <button class="btn-link" onclick="closeAlertsModal()">Cerrar</button>
-                <h3>Alertas de Pagos</h3>
-                <button class="btn-link bold" onclick="requestWebNotifications()">Activar 🔔</button>
-            </div>
-            <div id="alerts-list" class="alerts-list"></div>
-            <p id="alerts-empty" class="alerts-empty" style="display:none;">✅ Sin pagos próximos a vencer</p>
-        </div>
-    </div>
+const PANELES = [
+  ['ingreso', true,  'Ingresos fijos',         'Nómina, alquileres…',        'inc'],
+  ['gasto',   true,  'Gastos fijos',           'Hipoteca, recibos, cuotas…', 'exp'],
+  ['ingreso', false, 'Ingresos eventuales',    'Extras de este mes',         'inc'],
+  ['gasto',   false, 'Gastos extraordinarios', 'Imprevistos de este mes',    'exp']
+];
 
-    <!-- Modal de Informes -->
-    <div id="reports-modal" class="modal-overlay" onclick="handleReportsOverlayClick(event)">
-        <div class="modal-sheet">
-            <div class="modal-drag-handle"></div>
-            <div class="modal-header">
-                <button class="btn-link" onclick="closeReportsModal()">Cerrar</button>
-                <h3>Informes</h3>
-                <button class="btn-link bold" id="btn-share-report" onclick="compartirInforme()">Compartir</button>
-            </div>
+// Columnas con línea superpuesta, como en la referencia
+function chart(ms, vals, line, tit) {
+  const W = 560, H = 210, top = 14, bot = 26, ph = H - top - bot;
+  const all = [...vals, ...line, 0], mx = Math.max(...all), mn = Math.min(...all), rg = (mx - mn) || 1;
+  const y = v => top + (mx - v) / rg * ph, z = y(0), st = W / 12, bw = st * .55;
+  const g = ms.map((m, k) => {
+    const v = vals[k], yy = y(v), sel = m === cur, x = k * st + (st - bw) / 2;
+    return `<g data-m="${m}" tabindex="0" role="button" aria-label="${mes(m)}"><title>${mes(m)}: ${eur.format(v)}</title>
+      <rect x="${k * st}" y="0" width="${st}" height="${H}" fill="${sel ? '#ffffff12' : 'transparent'}" rx="8"/>
+      <rect x="${x}" y="${Math.min(yy, z)}" width="${bw}" height="${Math.max(1, Math.abs(yy - z))}" rx="3" fill="${v < 0 ? '#8a8a8a' : 'var(--or)'}" opacity="${sel ? 1 : .7}"/>
+      <text x="${k * st + st / 2}" y="${H - 8}" text-anchor="middle" style="${sel ? 'fill:#fff;font-weight:600' : ''}">${INI[k]}</text></g>`;
+  }).join('');
+  const pts = line.map((v, k) => [k * st + st / 2, y(v)]);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${tit}">${g}
+    <line x1="0" x2="${W}" y1="${z}" y2="${z}" stroke="#444" stroke-width="1"/>
+    <polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="var(--gr)" stroke-width="2" pointer-events="none"/>
+    ${pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="var(--gr)" pointer-events="none"/>`).join('')}</svg>`;
+}
 
-            <!-- Selector de tipo de informe -->
-            <div class="report-selector">
-                <button class="report-tab active" onclick="selectReport('pendientes', this)">Pendientes</button>
-                <button class="report-tab" onclick="selectReport('propietario', this)">Propietario</button>
-                <button class="report-tab" onclick="selectReport('cuenta', this)">Cuenta</button>
-                <button class="report-tab" onclick="selectReport('pagados', this)">Pagados</button>
-            </div>
+// Ranking TOP 10 en barras horizontales
+function top10(tipo, color, tit) {
+  const l = items.filter(i => i.tipo === tipo && activo(i, cur)).sort((a, b) => b.amount - a.amount).slice(0, 10);
+  const mx = l.length ? l[0].amount : 1;
+  return `<div class="card"><h2>${tit}<span>${mes(cur)}</span></h2><p class="sub">Los mayores del mes</p>` +
+    (l.length ? l.map(i => `<div class="r"><span class="l" title="${esc(i.name)}">${esc(i.name)}</span><div class="t"><i style="width:${i.amount / mx * 100}%;background:${color}"></i></div><b>${eur0.format(i.amount)}</b></div>`).join('') : '<div class="none">Aún no hay datos.</div>') +
+    `<div class="tag">TOP 10 ${tipo === 'gasto' ? 'gastos' : 'ingresos'}</div></div>`;
+}
 
-            <!-- Contenido del informe -->
-            <div id="report-content" class="report-content"></div>
-        </div>
-    </div>
+// Anillo con porcentajes
+function donut(tit, sub, a, b, ca, cb, la, lb) {
+  const t = a + b, C = 2 * Math.PI * 40, fa = t ? a / t : 0;
+  const seg = (f, off, c) => `<circle r="40" cx="60" cy="60" fill="none" stroke="${c}" stroke-width="20" stroke-dasharray="${f * C} ${C}" stroke-dashoffset="${-off * C}" transform="rotate(-90 60 60)"/>`;
+  return `<div class="card"><h2>${tit}</h2><p class="sub">${sub}</p><div class="donut">
+    <svg viewBox="0 0 120 120" role="img" aria-label="${la} ${Math.round(fa * 100)}%, ${lb} ${t ? 100 - Math.round(fa * 100) : 0}%"><circle r="40" cx="60" cy="60" fill="none" stroke="var(--pn2)" stroke-width="20"/>${t ? seg(fa, 0, ca) + seg(1 - fa, fa, cb) : ''}</svg>
+    <div class="lg"><span><i style="background:${ca}"></i>${la}: <b>${t ? Math.round(fa * 100) : 0}%</b><br>${eur.format(a)}</span><span><i style="background:${cb}"></i>${lb}: <b>${t ? 100 - Math.round(fa * 100) : 0}%</b><br>${eur.format(b)}</span></div></div></div>`;
+}
 
-    <nav class="tab-bar">
-        <button class="tab-item active" onclick="switchTab('resumen', this)">
-            <span class="icon">📊</span>
-            <span class="tab-label">Resumen</span>
-        </button>
-        <button class="tab-item" onclick="openAlertsModal(this)">
-            <span class="icon">🔔</span>
-            <span class="tab-label">Alertas</span>
-            <span id="alerts-badge" class="tab-badge" style="display:none;"></span>
-        </button>
-        <button class="tab-item" onclick="openReportsModal(this)">
-            <span class="icon">📋</span>
-            <span class="tab-label">Informes</span>
-        </button>
-    </nav>
+function render() {
+  document.getElementById('mlabel').textContent = mes(cur);
+  const y = cur.slice(0, 4), ms = Array.from({length: 12}, (_, k) => y + '-' + String(k + 1).padStart(2, '0'));
+  const ing = total('ingreso', cur), gas = total('gasto', cur), bal = ing - gas, ahorro = ing > 0 ? Math.round(bal / ing * 100) : 0;
+  document.getElementById('kpis').innerHTML = `
+    <div class="card kpi main"><small>Balance del mes</small><strong class="${bal >= 0 ? 'or' : ''}">${eur.format(bal)}</strong><em>${bal >= 0 ? 'Superávit' : 'Déficit'}</em></div>
+    <div class="card kpi"><small>Ingresos</small><strong class="or">${eur.format(ing)}</strong></div>
+    <div class="card kpi"><small>Gastos</small><strong class="gr">${eur.format(gas)}</strong></div>
+    <div class="card kpi"><small>Ahorro</small><strong>${ahorro}%</strong></div>`;
 
-    <script src="app.js"></script>
+  const I = ms.map(m => total('ingreso', m)), G = ms.map(m => total('gasto', m)), B = I.map((v, k) => v - G[k]);
+  const A = []; B.reduce((s, v) => (A.push(s + v), s + v), 0);
+  document.getElementById('grid').innerHTML =
+    `<div class="col">${top10('gasto', 'var(--gr)', 'Gastos')}${top10('ingreso', 'var(--or)', 'Ingresos')}</div>
+    <div class="col">
+      <div class="card"><h2>Ingresos vs. gastos<span>evolución ${y} · barras: ingresos, línea: gastos</span></h2><p class="sub">Pulsa un mes para verlo.</p>${chart(ms, I, G, 'Ingresos y gastos por mes')}</div>
+      <div class="card"><h2>Balance<span>evolución ${y} · barras: mes, línea: acumulado</span></h2><p class="sub">Los fijos se proyectan a los meses futuros.</p>${chart(ms, B, A, 'Balance mensual y acumulado')}</div></div>
+    <div class="col">${donut('Ingresos', 'Fijos y eventuales', total('ingreso', cur, true), total('ingreso', cur, false), 'var(--or)', 'var(--orl)', 'Fijos', 'Eventuales')}
+      ${donut('Gastos', 'Fijos y extraordinarios', total('gasto', cur, true), total('gasto', cur, false), 'var(--gr)', 'var(--gr2)', 'Fijos', 'Extraordinarios')}</div>`;
+
+  document.getElementById('mv').innerHTML = [0, 1].map(c => '<div class="col">' + [PANELES[c], PANELES[c + 2]].map(([tipo, fijo, titulo, ayuda, cls]) => {
+    const l = items.filter(i => i.tipo === tipo && i.fijo === fijo && activo(i, cur)), t = l.reduce((s, i) => s + i.amount, 0);
+    return `<div class="card ${cls}"><h2>${titulo}<span>${eur.format(t)}</span></h2><p class="sub">${ayuda}</p>
+      <ul>${l.length ? l.map(i => `<li><div class="n">${esc(i.name)}${fijo ? `<small>desde ${mes(i.month)}</small>` : ''}</div><b>${eur.format(i.amount)}</b><button data-del="${i.id}" aria-label="Eliminar ${esc(i.name)}">×</button></li>`).join('') : '<li class="empty">Aún no hay nada.</li>'}</ul>
+      <form data-tipo="${tipo}" data-fijo="${fijo}"><input name="name" placeholder="Concepto" required maxlength="60" aria-label="Concepto"><input name="amount" type="number" step="0.01" min="0.01" placeholder="€" required aria-label="Importe"><button>Añadir</button></form></div>`;
+  }).join('') + '</div>').join('');
+}
+
+document.getElementById('prev').onclick = () => { cur = shift(cur, -1); render(); };
+document.getElementById('next').onclick = () => { cur = shift(cur, 1); render(); };
+document.addEventListener('submit', e => {
+  const f = e.target.closest('form[data-tipo]'); if (!f) return;
+  e.preventDefault();
+  const amount = parseFloat(f.amount.value);
+  if (!(amount > 0)) return;
+  items.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), tipo: f.dataset.tipo, fijo: f.dataset.fijo === 'true', name: f.name.value.trim(), amount, month: cur});
+  save(); render();
+});
+document.addEventListener('click', e => {
+  const d = e.target.closest('[data-del]');
+  if (d) { items = items.filter(i => i.id !== d.dataset.del); save(); render(); return; }
+  const g = e.target.closest('svg g[data-m]');
+  if (g) { cur = g.dataset.m; render(); }
+});
+document.addEventListener('keydown', e => {
+  const g = e.target.closest && e.target.closest('svg g[data-m]');
+  if (g && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); cur = g.dataset.m; render(); }
+});
+document.getElementById('exp').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(items, null, 2)], {type: 'application/json'}));
+  a.download = 'finanzas-' + cur + '.json'; a.click(); URL.revokeObjectURL(a.href);
+};
+document.getElementById('imp').onclick = () => document.getElementById('file').click();
+document.getElementById('file').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!Array.isArray(d) || !d.every(i => i && typeof i.name === 'string' && typeof i.amount === 'number' && /^\d{4}-\d{2}$/.test(i.month))) throw 0;
+      if (confirm('Esto reemplazará los datos actuales. ¿Continuar?')) { items = d; save(); render(); }
+    } catch (x) { alert('El archivo no es una copia válida.'); }
+  };
+  r.readAsText(f); e.target.value = '';
+};
+render();
+</script>
 </body>
 </html>
